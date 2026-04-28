@@ -2,7 +2,7 @@ import { request } from './client.js'
 import { normalizeError } from './errors.js'
 import { mockBookings } from '../utils/mockData.js'
 
-const USE_MOCK = true
+const USE_MOCK = false
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
 // In-memory mock store so creating/cancelling persists during the session.

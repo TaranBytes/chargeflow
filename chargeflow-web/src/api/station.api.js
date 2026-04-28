@@ -3,7 +3,7 @@ import { normalizeError } from './errors.js'
 import { mockStations } from '../utils/mockData.js'
 
 // Toggle this to false once the backend is connected.
-const USE_MOCK = true
+const USE_MOCK = false
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
 export const stationApi = {
