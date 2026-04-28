@@ -1,10 +1,11 @@
+import { memo } from 'react'
 import { MapPin, Zap, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-export default function StationCard({ station, onClick, active }) {
+function StationCard({ station, onClick, active }) {
   const total = station.chargers.length
   const avail = station.chargers.filter((c) => c.status === 'AVAILABLE').length
-  const maxKW = Math.max(...station.chargers.map((c) => c.powerKW))
+  const maxKW = total ? Math.max(...station.chargers.map((c) => c.powerKW)) : 0
 
   return (
     <button
@@ -54,3 +55,20 @@ export default function StationCard({ station, onClick, active }) {
     </button>
   )
 }
+
+// Skip re-render when nothing the card cares about has changed.
+function arePropsEqual(prev, next) {
+  if (prev.active !== next.active) return false
+  if (prev.onClick !== next.onClick) return false
+  if (prev.station === next.station) return true
+  if (prev.station?.id !== next.station?.id) return false
+  if (prev.station?.name !== next.station?.name) return false
+  if (prev.station?.rating !== next.station?.rating) return false
+  if (prev.station?.chargers?.length !== next.station?.chargers?.length) return false
+  // Cheap charger-status fingerprint — short-circuits on equality.
+  const a = prev.station.chargers.map((c) => c.status).join('|')
+  const b = next.station.chargers.map((c) => c.status).join('|')
+  return a === b
+}
+
+export default memo(StationCard, arePropsEqual)

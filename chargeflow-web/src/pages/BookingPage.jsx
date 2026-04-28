@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
 import SlotPicker from '../components/booking/SlotPicker.jsx'
 import StatusBadge from '../components/common/StatusBadge.jsx'
@@ -9,6 +9,7 @@ import { Skeleton } from '../components/common/Skeleton.jsx'
 import { stationApi } from '../api/station.api.js'
 import { bookingApi } from '../api/booking.api.js'
 import { useToast } from '../hooks/useToast.js'
+import { useSocket } from '../hooks/useSocket.js'
 import {
   Zap,
   IndianRupee,
@@ -17,15 +18,30 @@ import {
   Clock,
   AlertCircle,
   MapPinOff,
+  Hourglass,
+  Sparkles,
 } from 'lucide-react'
 
-function validate({ slot, charger, duration }) {
+// Mock-but-realistic average session length used for "estimated wait" copy.
+const AVG_SESSION_MIN = 35
+
+function validate({ slot, charger, duration, conflicts }) {
   const errors = {}
   if (!charger) errors.charger = 'Pick a charger first.'
-  else if (charger.status !== 'AVAILABLE') errors.charger = 'This charger is not available right now.'
+  else if (charger.status !== 'AVAILABLE')
+    errors.charger = `This charger is currently ${charger.status.toLowerCase()}.`
   if (!slot) errors.slot = 'Choose a start time.'
   if (!duration || duration <= 0) errors.duration = 'Select a duration.'
+  if (slot && conflicts) errors.slot = 'That slot conflicts with another booking.'
   return errors
+}
+
+function slotConflictsWith(slotStart, durationMin, ranges) {
+  if (!slotStart) return false
+  const end = new Date(slotStart.getTime() + durationMin * 60 * 1000)
+  return ranges.some(
+    (r) => new Date(r.startTime) < end && new Date(r.endTime) > slotStart,
+  )
 }
 
 export default function BookingPage() {
@@ -34,9 +50,11 @@ export default function BookingPage() {
   const stationId = searchParams.get('station')
   const navigate = useNavigate()
   const toast = useToast()
+  const { subscribe } = useSocket() || {}
 
   const [station, setStation] = useState(null)
   const [charger, setCharger] = useState(null)
+  const [existingBookings, setExistingBookings] = useState([])
   const [loadError, setLoadError] = useState(null)
   const [loading, setLoading] = useState(Boolean(stationId))
 
@@ -46,25 +64,64 @@ export default function BookingPage() {
   const [submitError, setSubmitError] = useState(null)
   const [confirmed, setConfirmed] = useState(null)
 
-  const fetchStation = () => {
+  const fetchAll = useCallback(async () => {
     if (!stationId) return
     setLoading(true)
     setLoadError(null)
-    stationApi
-      .getById(stationId)
-      .then((s) => {
-        setStation(s)
-        const c =
-          s.chargers.find((x) => x.id === chargerId) ||
-          s.chargers.find((x) => x.status === 'AVAILABLE') ||
-          s.chargers[0]
-        setCharger(c)
-      })
-      .catch((err) => setLoadError(err))
-      .finally(() => setLoading(false))
-  }
+    try {
+      const s = await stationApi.getById(stationId)
+      setStation(s)
+      const c =
+        s.chargers.find((x) => x.id === chargerId) ||
+        s.chargers.find((x) => x.status === 'AVAILABLE') ||
+        s.chargers[0]
+      setCharger(c)
+      if (c?.id) {
+        const ex = await bookingApi.forCharger(c.id)
+        setExistingBookings(ex)
+      }
+    } catch (err) {
+      setLoadError(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [stationId, chargerId])
 
-  useEffect(fetchStation, [stationId, chargerId]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    fetchAll()
+  }, [fetchAll])
+
+  // Real-time charger status sync — if the charger we're booking goes
+  // OCCUPIED/RESERVED/OFFLINE while the user is on this page, reflect that.
+  useEffect(() => {
+    if (!subscribe || !charger?.id) return
+    const off = subscribe('chargerStatusUpdate', (evt) => {
+      const cid = String(evt.chargerId ?? '')
+      const ocppId = evt.ocppId
+      if (cid !== String(charger.id) && ocppId !== charger.ocppId) return
+      setCharger((prev) => (prev ? { ...prev, status: evt.status } : prev))
+      if (evt.status === 'OCCUPIED' || evt.status === 'OFFLINE') {
+        toast.warning(
+          'Charger just changed',
+          `${evt.ocppId ?? 'This charger'} is now ${String(evt.status).toLowerCase()}.`,
+        )
+      }
+    })
+    return off
+  }, [subscribe, charger?.id, charger?.ocppId, toast])
+
+  // Refresh existing bookings when a booking is created elsewhere for this charger.
+  useEffect(() => {
+    if (!subscribe || !charger?.id) return
+    const off = subscribe('bookingCreated', ({ booking } = {}) => {
+      if (!booking) return
+      const cid = booking.chargerId || booking.charger?.id || booking.charger
+      if (String(cid) === String(charger.id)) {
+        bookingApi.forCharger(charger.id).then(setExistingBookings).catch(() => {})
+      }
+    })
+    return off
+  }, [subscribe, charger?.id])
 
   const estKWh = useMemo(
     () => (charger ? ((charger.powerKW * duration) / 60) * 0.85 : 0),
@@ -75,8 +132,27 @@ export default function BookingPage() {
     [charger, estKWh],
   )
 
-  const errors = validate({ slot, charger, duration })
+  const conflicts = useMemo(
+    () => slotConflictsWith(slot?.start, duration, existingBookings),
+    [slot, duration, existingBookings],
+  )
+
+  const errors = validate({ slot, charger, duration, conflicts })
   const canSubmit = Object.keys(errors).length === 0
+
+  // "Next available" computed against current duration.
+  const nextAvailable = useMemo(() => {
+    const start = new Date()
+    start.setMinutes(Math.ceil(start.getMinutes() / 30) * 30, 0, 0)
+    for (let i = 0; i < 96; i++) {
+      const t = new Date(start.getTime() + i * 30 * 60 * 1000)
+      if (!slotConflictsWith(t, duration, existingBookings)) return t
+    }
+    return null
+  }, [duration, existingBookings])
+
+  const showWaitNotice =
+    charger?.status === 'OCCUPIED' || charger?.status === 'RESERVED'
 
   const handleConfirm = async () => {
     setSubmitError(null)
@@ -100,15 +176,19 @@ export default function BookingPage() {
       setConfirmed(booking)
       toast.success('Booking confirmed', `${booking.chargerName} reserved.`)
     } catch (err) {
-      const msg = err?.message || 'Could not create booking. Please try again.'
+      const msg =
+        err?.code === 'BOOKING_CONFLICT'
+          ? 'That slot was just taken. Try another time.'
+          : err?.message || 'Could not create booking. Please try again.'
       setSubmitError(msg)
       toast.error('Booking failed', msg)
+      // Refresh known bookings — backend or another tab may know more than us.
+      if (charger?.id) bookingApi.forCharger(charger.id).then(setExistingBookings).catch(() => {})
     } finally {
       setSubmitting(false)
     }
   }
 
-  // Hard guard: opened /booking with no station param
   if (!stationId) {
     return (
       <div className="p-6 max-w-md mx-auto mt-12">
@@ -116,11 +196,7 @@ export default function BookingPage() {
           icon={MapPinOff}
           title="Pick a charger first"
           description="Choose a station and an available charger from the map to start a booking."
-          action={
-            <Button onClick={() => navigate('/')} size="md">
-              Open map
-            </Button>
-          }
+          action={<Button onClick={() => navigate('/')}>Open map</Button>}
         />
       </div>
     )
@@ -132,7 +208,7 @@ export default function BookingPage() {
         <ErrorState
           title="Couldn't load this station"
           message={loadError.message}
-          onRetry={fetchStation}
+          onRetry={fetchAll}
         />
         <div className="mt-3 text-center">
           <Link to="/" className="text-xs text-slate-500 hover:text-slate-900">
@@ -143,9 +219,7 @@ export default function BookingPage() {
     )
   }
 
-  if (loading) {
-    return <BookingPageSkeleton />
-  }
+  if (loading) return <BookingPageSkeleton />
 
   if (!station || !charger) {
     return (
@@ -153,9 +227,9 @@ export default function BookingPage() {
         <EmptyState
           icon={MapPinOff}
           title="Charger not found"
-          description="The charger you’re trying to book may have been removed."
+          description="The charger you're trying to book may have been removed."
           action={
-            <Button variant="outline" size="md" onClick={() => navigate('/')}>
+            <Button variant="outline" onClick={() => navigate('/')}>
               Back to map
             </Button>
           }
@@ -192,14 +266,17 @@ export default function BookingPage() {
     )
   }
 
+  const chargerLocked = charger.status !== 'AVAILABLE'
+
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-slate-900">Book a charging slot</h1>
-      <p className="text-sm text-slate-500 mt-1">Pick a time and confirm your reservation.</p>
+      <p className="text-sm text-slate-500 mt-1">
+        Real-time availability — slots already taken are disabled.
+      </p>
 
       <div className="grid lg:grid-cols-[1fr_360px] gap-6 mt-6">
         <div className="space-y-4">
-          {/* Charger summary */}
           <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
@@ -215,18 +292,78 @@ export default function BookingPage() {
               </div>
               <StatusBadge status={charger.status} />
             </div>
-            {charger.status !== 'AVAILABLE' && (
+
+            {showWaitNotice && (
               <p className="mt-3 flex items-center gap-1.5 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded-md">
-                <AlertCircle className="w-3.5 h-3.5" />
-                This charger is currently {charger.status.toLowerCase()}. You can still review details, but bookings need an available charger.
+                <Hourglass className="w-3.5 h-3.5" />
+                Charger is currently {charger.status.toLowerCase()}. Average session ≈ {AVG_SESSION_MIN} min.
+                {nextAvailable && (
+                  <span className="ml-1">
+                    Next free slot:{' '}
+                    <strong>
+                      {nextAvailable.toLocaleString([], {
+                        weekday: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </strong>
+                  </span>
+                )}
+              </p>
+            )}
+
+            {!showWaitNotice && nextAvailable && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-md">
+                <Sparkles className="w-3.5 h-3.5" />
+                Earliest open slot:{' '}
+                <strong>
+                  {nextAvailable.toLocaleString([], {
+                    weekday: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </strong>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSlot({
+                      key: nextAvailable.toISOString(),
+                      start: nextAvailable,
+                      end: new Date(nextAvailable.getTime() + 30 * 60 * 1000),
+                      label: nextAvailable.toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }),
+                    })
+                  }
+                  className="ml-auto text-emerald-700 font-semibold hover:underline"
+                >
+                  Use it →
+                </button>
               </p>
             )}
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-5">
-            <h3 className="font-semibold text-slate-900 mb-3">Select start time</h3>
-            <SlotPicker value={slot} onChange={setSlot} />
-            {!slot && <p className="mt-3 text-[11px] text-slate-400">Pick any 30-minute slot to enable booking.</p>}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-slate-900">Select start time</h3>
+              <span className="text-[11px] text-slate-400">
+                {existingBookings.length} existing booking
+                {existingBookings.length === 1 ? '' : 's'} on this charger
+              </span>
+            </div>
+            <SlotPicker
+              value={slot}
+              onChange={setSlot}
+              duration={duration}
+              disabledRanges={existingBookings}
+              locked={chargerLocked}
+            />
+            {errors.slot && (
+              <p className="mt-2 text-[11px] text-rose-600 inline-flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.slot}
+              </p>
+            )}
           </div>
 
           <div className="bg-white border border-slate-200 rounded-xl p-5">
@@ -256,7 +393,6 @@ export default function BookingPage() {
           )}
         </div>
 
-        {/* Summary sidebar */}
         <aside className="bg-white border border-slate-200 rounded-xl p-5 h-fit lg:sticky lg:top-6">
           <h3 className="font-semibold text-slate-900">Booking summary</h3>
           <dl className="mt-4 space-y-3 text-sm">
@@ -290,10 +426,18 @@ export default function BookingPage() {
             size="lg"
             className="mt-5"
           >
-            {submitting ? 'Confirming…' : slot ? 'Confirm booking' : 'Pick a slot to continue'}
+            {submitting
+              ? 'Confirming…'
+              : !slot
+              ? 'Pick a slot to continue'
+              : conflicts
+              ? 'That slot is taken'
+              : chargerLocked
+              ? 'Charger unavailable'
+              : 'Confirm booking'}
           </Button>
           <p className="text-[11px] text-slate-400 text-center mt-3">
-            Mock booking — no payment processed.
+            Slots update live as other users book.
           </p>
         </aside>
       </div>
@@ -317,8 +461,8 @@ function BookingPageSkeleton() {
       <Skeleton className="h-4 w-72 mt-2" />
       <div className="grid lg:grid-cols-[1fr_360px] gap-6 mt-6">
         <div className="space-y-4">
-          <Skeleton className="h-24 rounded-xl" />
-          <Skeleton className="h-48 rounded-xl" />
+          <Skeleton className="h-28 rounded-xl" />
+          <Skeleton className="h-56 rounded-xl" />
           <Skeleton className="h-24 rounded-xl" />
         </div>
         <Skeleton className="h-72 rounded-xl" />

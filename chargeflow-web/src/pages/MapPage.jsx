@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useDeferredValue } from 'react'
 import MapView from '../components/map/MapView.jsx'
 import StationCard from '../components/station/StationCard.jsx'
 import { useStations } from '../hooks/useStations.js'
 import { useGeolocation } from '../hooks/useGeolocation.js'
+import { useSocket } from '../hooks/useSocket.js'
 import {
   Filter,
   Search,
@@ -11,6 +12,7 @@ import {
   MapPin,
   BatteryCharging,
   SearchX,
+  WifiOff,
 } from 'lucide-react'
 import EmptyState from '../components/common/EmptyState.jsx'
 import ErrorState from '../components/common/ErrorState.jsx'
@@ -24,17 +26,32 @@ const FILTERS = [
   { id: 'ac', label: 'AC' },
 ]
 
+function useDebouncedValue(value, delay = 200) {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(t)
+  }, [value, delay])
+  return debounced
+}
+
 export default function MapPage() {
   const { stations, loading, error, reload } = useStations()
   const { position } = useGeolocation()
+  const { connected } = useSocket() || {}
+
   const [query, setQuery] = useState('')
+  const debouncedQuery = useDebouncedValue(query, 200)
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
 
+  // useDeferredValue keeps typing snappy when filtering large lists.
+  const deferredStations = useDeferredValue(stations)
+
   const filtered = useMemo(() => {
-    let r = stations
-    if (query.trim()) {
-      const q = query.toLowerCase()
+    let r = deferredStations
+    const q = debouncedQuery.trim().toLowerCase()
+    if (q) {
       r = r.filter(
         (s) =>
           s.name.toLowerCase().includes(q) ||
@@ -48,7 +65,7 @@ export default function MapPage() {
     if (filter === 'ac')
       r = r.filter((s) => s.chargers.some((c) => c.type === 'AC'))
     return r
-  }, [stations, query, filter])
+  }, [deferredStations, debouncedQuery, filter])
 
   const stats = useMemo(() => {
     const totalChargers = stations.reduce((s, st) => s + st.chargers.length, 0)
@@ -66,7 +83,10 @@ export default function MapPage() {
   return (
     <div className="p-4 lg:p-6 space-y-4">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold text-slate-900">Find a charger</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-slate-900">Find a charger</h1>
+          <LiveDot connected={connected} />
+        </div>
         <p className="text-sm text-slate-500">
           Real-time station availability across your network.
         </p>
@@ -80,7 +100,6 @@ export default function MapPage() {
       </div>
 
       <div className="grid lg:grid-cols-[420px_1fr] gap-4 h-[calc(100vh-280px)] min-h-[520px]">
-        {/* List panel */}
         <div className="bg-white rounded-xl border border-slate-200 flex flex-col overflow-hidden">
           <div className="p-4 border-b border-slate-200 space-y-3">
             <div className="relative">
@@ -182,7 +201,6 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* Map panel */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
           {loading ? (
             <MapSkeleton />
@@ -205,6 +223,21 @@ export default function MapPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LiveDot({ connected }) {
+  if (connected === undefined) return null
+  return connected ? (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-soft" />
+      Live
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+      <WifiOff className="w-3 h-3" />
+      Offline
+    </span>
   )
 }
 

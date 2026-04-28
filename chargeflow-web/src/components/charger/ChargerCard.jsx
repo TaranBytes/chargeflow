@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { Zap, IndianRupee } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import StatusBadge from '../common/StatusBadge.jsx'
 
-export default function ChargerCard({ charger, stationId }) {
+function ChargerCard({ charger, stationId }) {
   const isAvailable = charger.status === 'AVAILABLE'
   return (
     <div className="p-4 bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-sm transition">
@@ -39,6 +40,7 @@ export default function ChargerCard({ charger, stationId }) {
       <Link
         to={isAvailable ? `/booking/${charger.id}?station=${stationId}` : '#'}
         onClick={(e) => !isAvailable && e.preventDefault()}
+        aria-disabled={!isAvailable}
         className={`mt-4 w-full grid place-items-center text-sm font-medium py-2.5 rounded-lg transition ${
           isAvailable
             ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/20'
@@ -50,3 +52,21 @@ export default function ChargerCard({ charger, stationId }) {
     </div>
   )
 }
+
+function arePropsEqual(prev, next) {
+  if (prev.stationId !== next.stationId) return false
+  const a = prev.charger
+  const b = next.charger
+  if (a === b) return true
+  return (
+    a?.id === b?.id &&
+    a?.status === b?.status &&
+    a?.powerKW === b?.powerKW &&
+    a?.pricePerKWh === b?.pricePerKWh &&
+    a?.ocppId === b?.ocppId &&
+    a?.type === b?.type &&
+    a?.connectorType === b?.connectorType
+  )
+}
+
+export default memo(ChargerCard, arePropsEqual)
