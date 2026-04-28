@@ -1,0 +1,36 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AppLayout from '../layouts/AppLayout.jsx'
+import ProtectedRoute from './ProtectedRoute.jsx'
+import LoginPage from '../pages/LoginPage.jsx'
+import MapPage from '../pages/MapPage.jsx'
+import StationDetailPage from '../pages/StationDetailPage.jsx'
+import BookingPage from '../pages/BookingPage.jsx'
+import ActiveSessionPage from '../pages/ActiveSessionPage.jsx'
+import BookingsPage from '../pages/BookingsPage.jsx'
+import NotificationsPage from '../pages/NotificationsPage.jsx'
+import ProfilePage from '../pages/ProfilePage.jsx'
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<MapPage />} />
+        <Route path="/station/:id" element={<StationDetailPage />} />
+        <Route path="/booking" element={<BookingPage />} />
+        <Route path="/booking/:chargerId" element={<BookingPage />} />
+        <Route path="/session" element={<ActiveSessionPage />} />
+        <Route path="/bookings" element={<BookingsPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
