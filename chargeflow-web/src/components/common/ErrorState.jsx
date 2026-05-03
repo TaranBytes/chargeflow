@@ -10,16 +10,16 @@ export default function ErrorState({
   return (
     <div
       role="alert"
-      className={`bg-slate-900/70 border border-rose-800/70 rounded-xl p-6 text-center ${className}`}
+      className={`rounded-xl border border-rose-500/35 bg-black/30 p-6 text-center backdrop-blur-sm ${className}`}
     >
-      <div className="w-12 h-12 mx-auto rounded-full bg-rose-900/30 grid place-items-center text-rose-400">
-        <AlertTriangle className="w-6 h-6" />
+      <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-rose-500/15 text-rose-300">
+        <AlertTriangle className="h-6 w-6" />
       </div>
-      <h3 className="mt-3 text-sm font-semibold text-slate-100">{title}</h3>
-      <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">{message}</p>
+      <h3 className="mt-3 text-sm font-semibold text-white">{title}</h3>
+      <p className="mx-auto mt-1 max-w-sm text-xs text-white/70">{message}</p>
       {onRetry && (
         <div className="mt-4 flex justify-center">
-          <Button variant="outline" size="sm" leftIcon={<RotateCw className="w-3.5 h-3.5" />} onClick={onRetry}>
+          <Button variant="outline" size="sm" leftIcon={<RotateCw className="h-3.5 w-3.5" />} onClick={onRetry}>
             Try again
           </Button>
         </div>

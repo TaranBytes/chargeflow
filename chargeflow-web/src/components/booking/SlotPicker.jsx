@@ -88,12 +88,12 @@ function SlotPicker({
         {enrichedSlots.map((s) => {
           const selected = value?.key === s.key
           const isNext = s.key === nextAvailableKey && !selected
-          let cls = 'bg-white text-slate-700 border-slate-200 hover:border-emerald-400 hover:text-emerald-700'
+          let cls = 'bg-white text-slate-700 border-slate-200 hover:border-ev-aqua hover:text-ev-deep'
           if (selected)
-            cls = 'bg-emerald-500 text-white border-emerald-500 shadow-sm shadow-emerald-500/30'
+            cls = 'bg-ev-aqua text-white border-ev-aqua shadow-sm shadow-glow-aqua'
           else if (s.disabled)
             cls = 'bg-slate-50 text-slate-300 border-slate-200 cursor-not-allowed line-through'
-          else if (isNext) cls = 'bg-emerald-50 text-emerald-800 border-emerald-300'
+          else if (isNext) cls = 'bg-ev-mint/15 text-ev-deep border-ev-aqua/40'
 
           return (
             <button
@@ -113,7 +113,7 @@ function SlotPicker({
             >
               {s.label}
               {isNext && (
-                <span className="absolute -top-1.5 -right-1.5 inline-flex items-center gap-0.5 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                <span className="absolute -right-1.5 -top-1.5 inline-flex items-center gap-0.5 rounded-full bg-ev-aqua px-1.5 py-0.5 text-[9px] font-bold text-white">
                   <Sparkles className="w-2.5 h-2.5" />
                   Next
                 </span>
@@ -125,10 +125,10 @@ function SlotPicker({
 
       <div className="mt-3 flex items-center gap-3 text-[11px] text-slate-500">
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded bg-emerald-500" /> Selected
+          <span className="inline-block h-2.5 w-2.5 rounded bg-ev-aqua" /> Selected
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="inline-block w-2.5 h-2.5 rounded border border-emerald-300 bg-emerald-50" /> Available
+          <span className="inline-block h-2.5 w-2.5 rounded border border-ev-aqua/40 bg-ev-mint/10" /> Available
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="inline-block w-2.5 h-2.5 rounded bg-slate-200" /> Booked / past

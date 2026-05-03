@@ -8,10 +8,10 @@ export const STATUS_LABELS = {
 
 export const STATUS_COLORS = {
   AVAILABLE: {
-    bg: 'bg-emerald-50',
-    text: 'text-emerald-700',
-    dot: 'bg-emerald-500',
-    border: 'border-emerald-200',
+    bg: 'bg-ev-mint/12',
+    text: 'text-ev-deep',
+    dot: 'bg-ev-aqua',
+    border: 'border-ev-aqua/30',
   },
   OCCUPIED: {
     bg: 'bg-rose-50',

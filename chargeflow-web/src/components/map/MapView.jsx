@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet'
 import L from 'leaflet'
 import { Link } from 'react-router-dom'
 
@@ -8,61 +8,77 @@ function getStationStatus(station) {
   if (!total) return 'occupied'
   const avail = station.chargers.filter((c) => c.status === 'AVAILABLE').length
   const reserved = station.chargers.filter((c) => c.status === 'RESERVED').length
-  if (avail === 0 && reserved > 0) return 'partial' // yellow per spec (reserved)
-  if (avail === 0) return 'occupied' // red
-  if (avail < total) return 'partial' // amber
-  return 'available' // green
+  if (avail === 0 && reserved > 0) return 'partial'
+  if (avail === 0) return 'occupied'
+  if (avail < total) return 'partial'
+  return 'available'
 }
 
-// Cache divIcon instances by status — recreating per marker is wasteful.
 const ICON_CACHE = new Map()
-function getMarkerIcon(status) {
-  if (ICON_CACHE.has(status)) return ICON_CACHE.get(status)
+function getMarkerIcon(status, isSelected) {
+  const key = `${status}-${isSelected ? '1' : '0'}`
+  if (ICON_CACHE.has(key)) return ICON_CACHE.get(key)
+  const sel = isSelected ? ' cf-marker--selected' : ''
   const icon = L.divIcon({
     className: '',
-    html: `<div class="cf-marker ${status}"><span style="font-size:14px;line-height:1;">⚡</span></div>`,
+    html: `<div class="cf-marker ${status}${sel}"><span style="font-size:14px;line-height:1;">⚡</span></div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -14],
   })
-  ICON_CACHE.set(status, icon)
+  ICON_CACHE.set(key, icon)
   return icon
 }
 
-function PanTo({ center }) {
+function MapPanController({ center, selected, hoveredStation }) {
   const map = useMap()
   useEffect(() => {
-    if (center) {
-      map.flyTo([center.lat, center.lng], Math.max(map.getZoom(), 12), { duration: 0.6 })
+    if (!center?.lat) return
+    const h = hoveredStation
+    const s = selected
+    if (h) {
+      map.flyTo([h.lat, h.lng], Math.max(map.getZoom(), 12), { duration: 0.35 })
+    } else if (s) {
+      map.flyTo([s.lat, s.lng], Math.max(map.getZoom(), 13), { duration: 0.5 })
+    } else {
+      map.flyTo([center.lat, center.lng], 11, { duration: 0.45 })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center?.lat, center?.lng])
+  }, [
+    center?.lat,
+    center?.lng,
+    selected?.location?.lat,
+    selected?.location?.lng,
+    hoveredStation?.lat,
+    hoveredStation?.lng,
+  ])
   return null
 }
 
 const StationMarker = memo(
-  function StationMarker({ station, onSelect }) {
+  function StationMarker({ station, onSelect, isSelected }) {
     const status = getStationStatus(station)
     const avail = station.chargers.filter((c) => c.status === 'AVAILABLE').length
     return (
       <Marker
         position={[station.location.lat, station.location.lng]}
-        icon={getMarkerIcon(status)}
+        icon={getMarkerIcon(status, isSelected)}
+        zIndexOffset={isSelected ? 1000 : 0}
         eventHandlers={{ click: () => onSelect?.(station) }}
       >
         <Popup>
-          <div className="space-y-1 min-w-[180px]">
-            <p className="font-semibold text-slate-900 text-sm">{station.name}</p>
-            <p className="text-xs text-slate-500">
+          <div className="min-w-[180px] space-y-1">
+            <p className="text-sm font-semibold text-white">{station.name}</p>
+            <p className="text-xs text-[rgba(255,255,255,0.65)]">
               {station.address.city}, {station.address.state}
             </p>
-            <p className="text-xs text-slate-700">
+            <p className="text-xs text-[rgba(255,255,255,0.88)]">
               {avail}/{station.chargers.length} available · up to{' '}
               {Math.max(...station.chargers.map((c) => c.powerKW))}kW
             </p>
             <Link
               to={`/station/${station.id}`}
-              className="text-xs font-semibold text-emerald-600 hover:underline inline-block mt-1"
+              className="mt-1 inline-block text-xs font-semibold text-[#FFDE42] transition hover:text-[#ffd000] hover:underline"
             >
               View station →
             </Link>
@@ -73,6 +89,7 @@ const StationMarker = memo(
   },
   (prev, next) => {
     if (prev.onSelect !== next.onSelect) return false
+    if (prev.isSelected !== next.isSelected) return false
     const a = prev.station
     const b = next.station
     if (a === b) return true
@@ -85,27 +102,45 @@ const StationMarker = memo(
   },
 )
 
-export default function MapView({ stations, center, onSelect, selected }) {
+export default function MapView({ stations, center, onSelect, selected, hoveredStation }) {
   const tileUrl = useMemo(
     () => import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     [],
   )
+
+  const hoveredLoc = hoveredStation
+    ? { lat: hoveredStation.location.lat, lng: hoveredStation.location.lng }
+    : null
+  const selectedLoc = selected
+    ? { lat: selected.location.lat, lng: selected.location.lng }
+    : null
 
   return (
     <MapContainer
       center={[center.lat, center.lng]}
       zoom={11}
       scrollWheelZoom
-      className="h-full w-full"
+      zoomControl={false}
+      className="z-0 h-full w-full min-h-0 rounded-3xl"
     >
+      <ZoomControl position="topright" />
+      <MapPanController
+        center={center}
+        selected={selectedLoc}
+        hoveredStation={hoveredLoc}
+      />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url={tileUrl}
       />
-      <PanTo center={selected ? selected.location : center} />
 
       {stations.map((s) => (
-        <StationMarker key={s.id} station={s} onSelect={onSelect} />
+        <StationMarker
+          key={s.id}
+          station={s}
+          onSelect={onSelect}
+          isSelected={selected?.id === s.id}
+        />
       ))}
     </MapContainer>
   )

@@ -251,9 +251,9 @@ export default function BookingPage() {
   if (confirmed) {
     return (
       <div className="p-6 max-w-lg mx-auto">
-        <div className="bg-white border border-emerald-200 rounded-2xl p-8 text-center shadow-sm">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 grid place-items-center mx-auto">
-            <CalendarCheck className="w-7 h-7 text-emerald-600" />
+        <div className="rounded-2xl border border-ev-aqua/25 bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-ev-mint/20">
+            <CalendarCheck className="h-7 w-7 text-ev-deep" />
           </div>
           <h2 className="mt-4 text-xl font-bold text-slate-900">Booking confirmed!</h2>
           <p className="text-sm text-slate-500 mt-1">
@@ -323,7 +323,7 @@ export default function BookingPage() {
             )}
 
             {!showWaitNotice && nextAvailable && (
-              <p className="mt-3 flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-md">
+              <p className="mt-3 flex items-center gap-1.5 rounded-md border border-ev-aqua/30 bg-ev-mint/10 px-3 py-2 text-xs text-ev-deep">
                 <Sparkles className="w-3.5 h-3.5" />
                 Earliest open slot:{' '}
                 <strong>
@@ -346,7 +346,7 @@ export default function BookingPage() {
                       }),
                     })
                   }
-                  className="ml-auto text-emerald-700 font-semibold hover:underline"
+                  className="ml-auto font-semibold text-ev-aqua hover:text-ev-deep hover:underline"
                 >
                   Use it →
                 </button>
@@ -415,7 +415,7 @@ export default function BookingPage() {
               k="Est. energy"
               v={
                 <span className="inline-flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                  <Zap className="h-3.5 w-3.5 text-ev-aqua" />
                   {estKWh.toFixed(1)} kWh
                 </span>
               }

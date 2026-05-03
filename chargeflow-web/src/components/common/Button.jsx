@@ -2,17 +2,15 @@ import Spinner from './Spinner.jsx'
 
 const VARIANTS = {
   primary:
-    'bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm shadow-emerald-900/40 disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none',
+    'bg-ev-gold hover:bg-ev-goldHover text-ev-espresso shadow-sm shadow-black/25 disabled:bg-slate-600 disabled:text-slate-400 disabled:shadow-none',
   secondary:
-    'bg-slate-700 hover:bg-slate-600 text-slate-100 disabled:bg-slate-800 disabled:text-slate-500',
+    'bg-ev-sidebar/90 hover:bg-ev-sidebar text-white border border-white/10 disabled:opacity-50',
   outline:
-    'bg-slate-900/60 border border-slate-700 hover:border-slate-600 text-slate-100 disabled:opacity-60',
-  ghost:
-    'bg-transparent hover:bg-slate-800 text-slate-200 disabled:opacity-60',
+    'bg-black/20 border border-ev-gold/35 hover:border-ev-gold/55 text-white disabled:opacity-60',
+  ghost: 'bg-transparent hover:bg-white/5 text-white disabled:opacity-60',
   danger:
-    'bg-rose-500 hover:bg-rose-400 text-white shadow-sm shadow-rose-900/20 disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none',
-  subtle:
-    'bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-60',
+    'bg-rose-500 hover:bg-rose-400 text-white shadow-sm shadow-rose-900/20 disabled:bg-slate-600 disabled:text-slate-400 disabled:shadow-none',
+  subtle: 'bg-white/5 hover:bg-white/10 text-white disabled:opacity-60',
 }
 
 const SIZES = {
@@ -39,7 +37,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center font-medium transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 ${VARIANTS[variant]} ${SIZES[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-colors duration-250 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-ev-gold/40 ${VARIANTS[variant]} ${SIZES[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...rest}
     >
       {loading ? <Spinner size="sm" /> : leftIcon}

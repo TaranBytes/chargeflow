@@ -18,7 +18,7 @@ export default function ProfilePage() {
         <img
           src={user.avatar}
           alt={user.name}
-          className="w-16 h-16 rounded-full bg-slate-200 ring-4 ring-emerald-50"
+          className="h-16 w-16 rounded-full bg-white/20 ring-4 ring-ev-gold/20"
         />
         <div className="min-w-0">
           <p className="text-lg font-bold text-slate-900 truncate">{user.name}</p>
@@ -42,7 +42,7 @@ export default function ProfilePage() {
       <div className="bg-white border border-slate-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-slate-900">My vehicles</h2>
-          <button className="text-xs font-medium text-emerald-600 hover:underline inline-flex items-center gap-1">
+          <button className="inline-flex items-center gap-1 text-xs font-medium text-ev-aqua transition hover:text-ev-mint hover:underline">
             <Plus className="w-3 h-3" /> Add vehicle
           </button>
         </div>

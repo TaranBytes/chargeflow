@@ -49,7 +49,7 @@ export default function NotificationsPage() {
                 className={`w-10 h-10 rounded-lg grid place-items-center shrink-0 ${
                   n.read
                     ? 'bg-slate-100 text-slate-500'
-                    : 'bg-emerald-50 text-emerald-700'
+                    : 'bg-ev-mint/12 text-ev-deep'
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
                 <p className="text-sm text-slate-600 mt-0.5">{n.body}</p>
               </div>
               {!n.read && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0" />
+                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-ev-aqua shadow-glow-aqua" />
               )}
             </div>
           )

@@ -53,23 +53,21 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 p-6">
-      <div className="w-full max-w-md bg-slate-900/70 rounded-xl border border-slate-800 p-6 shadow-2xl shadow-black/30 backdrop-blur">
-        <h1 className="text-2xl font-bold text-slate-100">Set a new password</h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Enter your reset token and choose a new password.
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-ev-canopy p-6">
+      <div className="w-full max-w-md rounded-xl border border-white/10 bg-ev-sidebar/80 p-6 shadow-2xl shadow-black/35 backdrop-blur-xl">
+        <h1 className="text-2xl font-bold text-white">Set a new password</h1>
+        <p className="mt-1 text-sm text-white/70">Enter your reset token and choose a new password.</p>
 
         {submitError && (
-          <div className="mt-5 flex items-start gap-2 bg-rose-900/25 border border-rose-800/80 text-rose-300 px-3 py-2.5 rounded-lg text-xs">
-            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <div className="mt-5 flex items-start gap-2 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2.5 text-xs text-rose-200">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{submitError}</span>
           </div>
         )}
 
         {done && (
-          <div className="mt-5 flex items-start gap-2 bg-emerald-900/20 border border-emerald-800/70 text-emerald-300 px-3 py-2.5 rounded-lg text-xs">
-            <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+          <div className="mt-5 flex items-start gap-2 rounded-lg border border-ev-gold/35 bg-[rgba(255,222,66,0.08)] px-3 py-2.5 text-xs text-white">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-ev-gold" />
             <span>Password reset successful. Redirecting to sign in…</span>
           </div>
         )}
@@ -111,9 +109,9 @@ export default function ResetPasswordPage() {
           </Button>
         </form>
 
-        <p className="mt-4 text-sm text-slate-400 text-center">
+        <p className="mt-4 text-center text-sm text-white/70">
           Back to{' '}
-          <Link to="/login" className="text-emerald-600 hover:underline font-medium">
+          <Link to="/login" className="font-medium text-ev-gold transition hover:text-ev-goldHover hover:underline">
             sign in
           </Link>
         </p>
@@ -125,7 +123,7 @@ export default function ResetPasswordPage() {
 function Field({ label, name, type = 'text', value, onChange, error, ...rest }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-xs font-semibold text-slate-300 mb-1.5">
+      <label htmlFor={name} className="mb-1.5 block text-xs font-semibold text-white/80">
         {label}
       </label>
       <input
@@ -136,16 +134,16 @@ function Field({ label, name, type = 'text', value, onChange, error, ...rest }) 
         onChange={(e) => onChange(e.target.value)}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${name}-error` : undefined}
-        className={`w-full bg-slate-900 border rounded-lg px-3 py-2.5 text-sm text-slate-100 outline-none transition focus:ring-2 ${
+        className={`w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition duration-250 focus:ring-2 ${
           error
-            ? 'border-rose-700 focus:border-rose-500 focus:ring-rose-900/50'
-            : 'border-slate-700 focus:border-emerald-500 focus:ring-emerald-900/30'
+            ? 'border-rose-500/60 bg-white text-ev-espresso focus:border-rose-500 focus:ring-rose-500/30'
+            : 'border-white/12 bg-white text-ev-espresso placeholder:text-[#666666] focus:border-ev-moss focus:ring-ev-gold/25'
         }`}
         {...rest}
       />
       {error && (
-        <p id={`${name}-error`} className="mt-1 text-[11px] text-rose-400 flex items-center gap-1">
-          <AlertCircle className="w-3 h-3" /> {error}
+        <p id={`${name}-error`} className="mt-1 flex items-center gap-1 text-[11px] text-rose-300">
+          <AlertCircle className="h-3 w-3" /> {error}
         </p>
       )}
     </div>

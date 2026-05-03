@@ -3,7 +3,7 @@ export function Skeleton({ className = '', rounded = 'rounded-md' }) {
   return (
     <div
       aria-hidden="true"
-      className={`bg-slate-700/70 animate-pulse ${rounded} ${className}`}
+      className={`animate-pulse bg-white/10 ${rounded} ${className}`}
     />
   )
 }
@@ -11,19 +11,19 @@ export function Skeleton({ className = '', rounded = 'rounded-md' }) {
 // Pre-built placeholder for the station list rows on the map page.
 export function StationCardSkeleton() {
   return (
-    <div className="p-4 bg-slate-900/70 rounded-xl border border-slate-800">
+    <div className="rounded-2xl border border-white/[0.08] bg-[rgba(255,255,255,0.03)] p-5 backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-4 w-2/3 rounded-lg" />
+          <Skeleton className="h-3 w-1/3 rounded-lg" />
         </div>
-        <Skeleton className="h-3 w-8" />
+        <Skeleton className="h-7 w-12 rounded-full" />
       </div>
-      <div className="flex gap-2 mt-3">
-        <Skeleton className="h-6 w-24 rounded-md" />
-        <Skeleton className="h-6 w-20 rounded-md" />
+      <div className="mt-4 flex gap-2">
+        <Skeleton className="h-7 w-24 rounded-full" />
+        <Skeleton className="h-7 w-20 rounded-full" />
       </div>
-      <Skeleton className="h-3 w-20 mt-3" />
+      <Skeleton className="mt-4 h-3 w-20 rounded-lg" />
     </div>
   )
 }
@@ -31,19 +31,19 @@ export function StationCardSkeleton() {
 // Pre-built placeholder for the charger grid on station detail.
 export function ChargerCardSkeleton() {
   return (
-    <div className="p-4 bg-slate-900/70 rounded-xl border border-slate-800">
+    <div className="rounded-2xl border border-white/[0.08] bg-[rgba(255,255,255,0.03)] p-5 backdrop-blur-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-2">
-          <Skeleton className="h-3 w-16" />
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-16 rounded-lg" />
+          <Skeleton className="h-4 w-32 rounded-lg" />
         </div>
-        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-6 w-20 rounded-full" />
       </div>
-      <div className="grid grid-cols-2 gap-3 mt-4">
-        <Skeleton className="h-16 rounded-lg" />
-        <Skeleton className="h-16 rounded-lg" />
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Skeleton className="h-16 rounded-xl" />
+        <Skeleton className="h-16 rounded-xl" />
       </div>
-      <Skeleton className="h-10 w-full mt-4 rounded-lg" />
+      <Skeleton className="mt-4 h-10 w-full rounded-xl" />
     </div>
   )
 }
@@ -51,10 +51,10 @@ export function ChargerCardSkeleton() {
 // Map area placeholder.
 export function MapSkeleton() {
   return (
-    <div className="h-full w-full bg-slate-900 animate-pulse grid place-items-center">
-      <div className="text-center text-slate-500 text-sm">
+    <div className="map-loading-shimmer grid h-full w-full place-items-center rounded-3xl">
+      <div className="text-center text-sm text-[rgba(255,255,255,0.65)]">
         <svg
-          className="w-8 h-8 mx-auto mb-2 opacity-50"
+          className="mx-auto mb-2 h-8 w-8 opacity-50"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

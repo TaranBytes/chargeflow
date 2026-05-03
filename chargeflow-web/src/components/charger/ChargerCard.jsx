@@ -23,7 +23,7 @@ function ChargerCard({ charger, stationId }) {
         <div className="rounded-lg bg-slate-50 p-3">
           <p className="text-[11px] text-slate-500 uppercase tracking-wide font-semibold">Power</p>
           <p className="text-lg font-bold text-slate-900 inline-flex items-center gap-1 mt-0.5">
-            <Zap className="w-4 h-4 text-emerald-500" />
+            <Zap className="h-4 w-4 text-ev-gold" />
             {charger.powerKW}kW
           </p>
         </div>
@@ -43,7 +43,7 @@ function ChargerCard({ charger, stationId }) {
         aria-disabled={!isAvailable}
         className={`mt-4 w-full grid place-items-center text-sm font-medium py-2.5 rounded-lg transition ${
           isAvailable
-            ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-sm shadow-emerald-500/20'
+            ? 'bg-ev-gold text-ev-espresso shadow-sm shadow-black/25 transition hover:bg-ev-goldHover'
             : 'bg-slate-100 text-slate-400 cursor-not-allowed'
         }`}
       >

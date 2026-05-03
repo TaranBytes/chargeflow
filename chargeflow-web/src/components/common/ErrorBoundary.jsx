@@ -53,7 +53,7 @@ export default class ErrorBoundary extends Component {
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium px-3 py-2 rounded-lg"
+              className="rounded-lg bg-ev-gold px-3 py-2 text-sm font-medium text-ev-espresso transition hover:bg-ev-goldHover"
             >
               Reload page
             </button>

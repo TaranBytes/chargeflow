@@ -36,7 +36,7 @@ export default function BookingCard({ booking, onCancel }) {
         <div>
           <p className="text-[11px] uppercase font-semibold text-slate-500 tracking-wide">Energy</p>
           <p className="text-sm font-medium text-slate-900 mt-0.5 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-emerald-500" />
+            <Zap className="h-3.5 w-3.5 text-ev-aqua" />
             {booking.estimatedKWh} kWh
           </p>
         </div>
