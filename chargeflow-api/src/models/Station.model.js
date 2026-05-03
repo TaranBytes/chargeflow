@@ -26,6 +26,7 @@ const stationSchema = new mongoose.Schema(
     operatingHours: { type: String, default: '24/7' },
     amenities: { type: [String], default: [] },
     images: { type: [String], default: [] },
+    averageChargeTimeMinutes: { type: Number, default: 45, min: 1 },
     totalChargers: { type: Number, default: 0 },
     status: {
       type: String,

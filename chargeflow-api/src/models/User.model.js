@@ -26,6 +26,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ['user', 'operator', 'admin'], default: 'user' },
     phone: String,
     avatar: String,
+    resetPasswordTokenHash: { type: String, default: null, select: false },
+    resetPasswordExpiresAt: { type: Date, default: null, select: false },
     vehicles: [vehicleSchema],
   },
   {

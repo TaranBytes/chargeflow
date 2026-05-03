@@ -14,3 +14,21 @@ export const login = asyncHandler(async (req, res) => {
 export const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: { user: req.user.toJSON() } })
 })
+
+export const forgotPassword = asyncHandler(async (req, res) => {
+  const result = await authService.forgotPassword(req.body)
+  res.json({
+    success: true,
+    data: result,
+    message: 'If that email is registered, a reset link has been sent.',
+  })
+})
+
+export const resetPassword = asyncHandler(async (req, res) => {
+  const result = await authService.resetPassword(req.body)
+  res.json({
+    success: true,
+    data: result,
+    message: 'Password reset successful. Please sign in.',
+  })
+})

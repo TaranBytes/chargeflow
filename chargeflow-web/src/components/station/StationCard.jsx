@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { MapPin, Zap, Star } from 'lucide-react'
+import { Clock3, MapPin, Zap, Star } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 function StationCard({ station, onClick, active }) {
@@ -43,6 +43,11 @@ function StationCard({ station, onClick, active }) {
         <div className="text-xs font-medium px-2 py-1 rounded-md bg-slate-100 text-slate-700 inline-flex items-center gap-1">
           <Zap className="w-3 h-3" /> up to {maxKW}kW
         </div>
+        {station.averageChargeTimeMinutes ? (
+          <div className="text-xs font-medium px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 inline-flex items-center gap-1">
+            <Clock3 className="w-3 h-3" /> avg {station.averageChargeTimeMinutes} min
+          </div>
+        ) : null}
       </div>
 
       <Link

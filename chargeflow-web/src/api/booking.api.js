@@ -10,16 +10,46 @@ let bookingsStore = [...mockBookings]
 
 const ACTIVE = ['CONFIRMED', 'PENDING', 'IN_PROGRESS']
 
+function normalizeBooking(booking) {
+  if (!booking) return booking
+
+  const stationObj = booking.station && typeof booking.station === 'object' ? booking.station : null
+  const chargerObj = booking.charger && typeof booking.charger === 'object' ? booking.charger : null
+
+  const stationName = booking.stationName || stationObj?.name || ''
+  const stationId = booking.stationId || stationObj?.id || stationObj?._id || booking.station || ''
+
+  const chargerCode = chargerObj?.ocppId || ''
+  const chargerSpec =
+    booking.chargerSpec ||
+    (chargerObj?.type || chargerObj?.powerKW
+      ? `${chargerObj?.type || ''}${chargerObj?.powerKW ? ` ${chargerObj.powerKW}kW` : ''}`.trim()
+      : '')
+  const chargerName =
+    booking.chargerName || [chargerCode, chargerSpec].filter(Boolean).join(' · ') || ''
+  const chargerId = booking.chargerId || chargerObj?.id || chargerObj?._id || booking.charger || ''
+
+  return {
+    ...booking,
+    id: booking.id || booking._id,
+    stationId,
+    stationName,
+    chargerId,
+    chargerName,
+  }
+}
+
 export const bookingApi = {
   async list() {
     try {
       if (USE_MOCK) {
         await delay(250)
-        return [...bookingsStore].sort(
-          (a, b) => new Date(b.startTime) - new Date(a.startTime),
-        )
+        return [...bookingsStore]
+          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+          .map(normalizeBooking)
       }
-      return await request('get', '/bookings/my')
+      const items = await request('get', '/bookings/my')
+      return (items || []).map(normalizeBooking)
     } catch (err) {
       throw normalizeError(err)
     }
@@ -34,22 +64,26 @@ export const bookingApi = {
       if (USE_MOCK) {
         await delay(150)
         const now = Date.now()
-        return bookingsStore.filter(
-          (b) =>
-            b.chargerId === chargerId &&
-            ACTIVE.includes(b.status) &&
-            new Date(b.endTime).getTime() > now,
-        )
+        return bookingsStore
+          .filter(
+            (b) =>
+              b.chargerId === chargerId &&
+              ACTIVE.includes(b.status) &&
+              new Date(b.endTime).getTime() > now,
+          )
+          .map(normalizeBooking)
       }
       // Production: backend should expose this; falls back to /my filter.
       const all = await request('get', '/bookings/my')
       const now = Date.now()
-      return (all || []).filter(
-        (b) =>
-          (b.charger?.id === chargerId || b.charger === chargerId || b.chargerId === chargerId) &&
-          ACTIVE.includes(b.status) &&
-          new Date(b.endTime).getTime() > now,
-      )
+      return (all || [])
+        .map(normalizeBooking)
+        .filter(
+          (b) =>
+            String(b.chargerId) === String(chargerId) &&
+            ACTIVE.includes(b.status) &&
+            new Date(b.endTime).getTime() > now,
+        )
     } catch (err) {
       throw normalizeError(err)
     }
@@ -99,9 +133,10 @@ export const bookingApi = {
           ...payload,
         }
         bookingsStore = [booking, ...bookingsStore]
-        return booking
+        return normalizeBooking(booking)
       }
-      return await request('post', '/bookings', { data: payload })
+      const booking = await request('post', '/bookings', { data: payload })
+      return normalizeBooking(booking)
     } catch (err) {
       throw normalizeError(err)
     }
@@ -114,9 +149,10 @@ export const bookingApi = {
         bookingsStore = bookingsStore.map((b) =>
           b.id === id ? { ...b, status: 'CANCELLED' } : b,
         )
-        return bookingsStore.find((b) => b.id === id)
+        return normalizeBooking(bookingsStore.find((b) => b.id === id))
       }
-      return await request('delete', `/bookings/${id}`)
+      const booking = await request('delete', `/bookings/${id}`)
+      return normalizeBooking(booking)
     } catch (err) {
       throw normalizeError(err)
     }

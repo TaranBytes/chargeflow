@@ -8,6 +8,7 @@ import ErrorState from '../components/common/ErrorState.jsx'
 import { Skeleton } from '../components/common/Skeleton.jsx'
 import Button from '../components/common/Button.jsx'
 import { useToast } from '../hooks/useToast.js'
+import { notificationService } from '../services/notification.service.js'
 
 export default function BookingsPage() {
   const navigate = useNavigate()
@@ -48,6 +49,15 @@ export default function BookingsPage() {
     try {
       await bookingApi.cancel(booking.id)
       toast.success('Booking cancelled', `${booking.chargerName} has been freed up.`)
+      notificationService.add(
+        {
+          type: 'booking',
+          title: 'Booking cancelled',
+          body: `${booking.stationName} · ${booking.chargerName} was cancelled.`,
+          dedupeKey: `booking-cancel:${booking.id}`,
+        },
+        { dedupeWindowMs: 12000 },
+      )
       await load()
     } catch (err) {
       toast.error('Could not cancel', err?.message || 'Please try again.')

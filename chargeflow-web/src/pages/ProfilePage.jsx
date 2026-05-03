@@ -1,8 +1,10 @@
 import { useAuth } from '../hooks/useAuth.js'
 import { Car, Mail, User as UserIcon, Shield, LogOut, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
+  const navigate = useNavigate()
   if (!user) return null
 
   return (
@@ -23,7 +25,7 @@ export default function ProfilePage() {
           <p className="text-sm text-slate-500 truncate">{user.email}</p>
         </div>
         <button
-          onClick={logout}
+          onClick={() => navigate('/logout')}
           className="ml-auto inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium px-3 py-2 rounded-lg shrink-0"
         >
           <LogOut className="w-4 h-4" /> Log out

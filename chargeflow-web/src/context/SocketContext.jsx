@@ -2,6 +2,7 @@ import { createContext, useEffect, useRef, useState, useCallback } from 'react'
 import { io } from 'socket.io-client'
 import { useAuth } from '../hooks/useAuth.js'
 import { useToast } from '../hooks/useToast.js'
+import { notificationService } from '../services/notification.service.js'
 
 export const SocketContext = createContext(null)
 
@@ -80,8 +81,22 @@ export function SocketProvider({ children }) {
       if (!booking) return
       const id = booking.id || booking._id
       if (!dedupe(`booking:${id}`, 5000)) return
-      const label = booking.chargerName || `${booking.chargerId ?? 'Charger'}`
+      const stationName = booking.stationName || booking.station?.name || 'Station'
+      const label =
+        booking.chargerName ||
+        booking.charger?.ocppId ||
+        booking.chargerId ||
+        'Charger'
       toastRef.current?.success('Booking confirmed', `${label} is reserved.`)
+      notificationService.add(
+        {
+          type: 'booking',
+          title: 'Booking confirmed',
+          body: `${stationName} · ${label} reserved.`,
+          dedupeKey: `booking-created:${id}`,
+        },
+        { dedupeWindowMs: 12000 },
+      )
     })
 
     socket.on('bookingUpdate', ({ booking } = {}) => {
@@ -89,7 +104,22 @@ export function SocketProvider({ children }) {
       if (booking.status === 'CANCELLED') {
         const id = booking.id || booking._id
         if (dedupe(`booking-cancel:${id}`, 5000)) {
-          toastRef.current?.info('Booking cancelled', booking.chargerName ?? '')
+          const stationName = booking.stationName || booking.station?.name || 'Station'
+          const label =
+            booking.chargerName ||
+            booking.charger?.ocppId ||
+            booking.chargerId ||
+            'Charger'
+          toastRef.current?.info('Booking cancelled', label)
+          notificationService.add(
+            {
+              type: 'booking',
+              title: 'Booking cancelled',
+              body: `${stationName} · ${label} was cancelled.`,
+              dedupeKey: `booking-cancel:${id}`,
+            },
+            { dedupeWindowMs: 12000 },
+          )
         }
       }
     })
@@ -99,6 +129,17 @@ export function SocketProvider({ children }) {
       const id = session.id || session._id
       if (!dedupe(`session-start:${id}`, 5000)) return
       toastRef.current?.success('Charging started', 'Your live session is running.')
+      const stationName = session.station?.name || 'Station'
+      const chargerLabel = session.charger?.ocppId || 'Charger'
+      notificationService.add(
+        {
+          type: 'session',
+          title: 'Charging started',
+          body: `${stationName} · ${chargerLabel} session is now live.`,
+          dedupeKey: `session-start:${id}`,
+        },
+        { dedupeWindowMs: 12000 },
+      )
     })
 
     socket.on('chargingStopped', ({ session } = {}) => {
@@ -108,6 +149,17 @@ export function SocketProvider({ children }) {
       const energy = Number(session.energyConsumed ?? 0).toFixed(1)
       const cost = Number(session.cost ?? 0).toFixed(0)
       toastRef.current?.info('Session ended', `Delivered ${energy} kWh · ₹${cost}`)
+      const stationName = session.station?.name || 'Station'
+      const chargerLabel = session.charger?.ocppId || 'Charger'
+      notificationService.add(
+        {
+          type: 'session',
+          title: 'Session ended',
+          body: `${stationName} · ${chargerLabel} delivered ${energy} kWh · ₹${cost}.`,
+          dedupeKey: `session-stop:${id}`,
+        },
+        { dedupeWindowMs: 12000 },
+      )
     })
 
     socket.on('chargerStatusUpdate', (evt = {}) => {

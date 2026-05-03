@@ -3,7 +3,7 @@ export function Skeleton({ className = '', rounded = 'rounded-md' }) {
   return (
     <div
       aria-hidden="true"
-      className={`bg-slate-200/70 animate-pulse ${rounded} ${className}`}
+      className={`bg-slate-700/70 animate-pulse ${rounded} ${className}`}
     />
   )
 }
@@ -11,7 +11,7 @@ export function Skeleton({ className = '', rounded = 'rounded-md' }) {
 // Pre-built placeholder for the station list rows on the map page.
 export function StationCardSkeleton() {
   return (
-    <div className="p-4 bg-white rounded-xl border border-slate-200">
+    <div className="p-4 bg-slate-900/70 rounded-xl border border-slate-800">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-2">
           <Skeleton className="h-4 w-2/3" />
@@ -31,7 +31,7 @@ export function StationCardSkeleton() {
 // Pre-built placeholder for the charger grid on station detail.
 export function ChargerCardSkeleton() {
   return (
-    <div className="p-4 bg-white rounded-xl border border-slate-200">
+    <div className="p-4 bg-slate-900/70 rounded-xl border border-slate-800">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-2">
           <Skeleton className="h-3 w-16" />
@@ -51,8 +51,8 @@ export function ChargerCardSkeleton() {
 // Map area placeholder.
 export function MapSkeleton() {
   return (
-    <div className="h-full w-full bg-slate-100 animate-pulse grid place-items-center">
-      <div className="text-center text-slate-400 text-sm">
+    <div className="h-full w-full bg-slate-900 animate-pulse grid place-items-center">
+      <div className="text-center text-slate-500 text-sm">
         <svg
           className="w-8 h-8 mx-auto mb-2 opacity-50"
           fill="none"

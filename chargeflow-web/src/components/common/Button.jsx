@@ -2,17 +2,17 @@ import Spinner from './Spinner.jsx'
 
 const VARIANTS = {
   primary:
-    'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm shadow-emerald-500/30 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none',
+    'bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm shadow-emerald-900/40 disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none',
   secondary:
-    'bg-slate-900 hover:bg-slate-800 text-white disabled:bg-slate-200 disabled:text-slate-400',
+    'bg-slate-700 hover:bg-slate-600 text-slate-100 disabled:bg-slate-800 disabled:text-slate-500',
   outline:
-    'bg-white border border-slate-200 hover:border-slate-300 text-slate-900 disabled:opacity-60',
+    'bg-slate-900/60 border border-slate-700 hover:border-slate-600 text-slate-100 disabled:opacity-60',
   ghost:
-    'bg-transparent hover:bg-slate-100 text-slate-700 disabled:opacity-60',
+    'bg-transparent hover:bg-slate-800 text-slate-200 disabled:opacity-60',
   danger:
-    'bg-rose-500 hover:bg-rose-600 text-white shadow-sm shadow-rose-500/20 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none',
+    'bg-rose-500 hover:bg-rose-400 text-white shadow-sm shadow-rose-900/20 disabled:bg-slate-700 disabled:text-slate-400 disabled:shadow-none',
   subtle:
-    'bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-60',
+    'bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-60',
 }
 
 const SIZES = {
@@ -39,7 +39,7 @@ export default function Button({
     <button
       type={type}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center font-medium transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 ${VARIANTS[variant]} ${SIZES[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-colors disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 ${VARIANTS[variant]} ${SIZES[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...rest}
     >
       {loading ? <Spinner size="sm" /> : leftIcon}

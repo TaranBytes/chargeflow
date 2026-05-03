@@ -20,12 +20,23 @@ export class ApiError extends Error {
 export function normalizeError(err) {
   if (err instanceof ApiError) return err
 
+  const toText = (value) => {
+    if (typeof value === 'string') return value
+    if (Array.isArray(value) && value.length > 0) {
+      const first = value[0]
+      if (typeof first === 'string') return first
+      if (typeof first?.message === 'string') return first.message
+    }
+    if (value && typeof value?.message === 'string') return value.message
+    return null
+  }
+
   // Axios error with a server response
   if (err?.response) {
     const { status, data } = err.response
     const message =
-      data?.error?.message ||
-      data?.message ||
+      toText(data?.error?.message) ||
+      toText(data?.message) ||
       (status >= 500
         ? 'The server is having trouble. Please try again in a moment.'
         : `Request failed (${status})`)
@@ -47,7 +58,7 @@ export function normalizeError(err) {
   }
 
   // Programmer error or something thrown synchronously
-  return new ApiError(err?.message || 'Unexpected error', {
+  return new ApiError(toText(err?.message) || (typeof err === 'string' ? err : null) || 'Unexpected error', {
     status: 0,
     code: 'UNKNOWN',
     cause: err,

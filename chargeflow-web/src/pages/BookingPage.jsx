@@ -10,6 +10,7 @@ import { stationApi } from '../api/station.api.js'
 import { bookingApi } from '../api/booking.api.js'
 import { useToast } from '../hooks/useToast.js'
 import { useSocket } from '../hooks/useSocket.js'
+import { notificationService } from '../services/notification.service.js'
 import {
   Zap,
   IndianRupee,
@@ -175,6 +176,15 @@ export default function BookingPage() {
       })
       setConfirmed(booking)
       toast.success('Booking confirmed', `${booking.chargerName} reserved.`)
+      notificationService.add(
+        {
+          type: 'booking',
+          title: 'Booking confirmed',
+          body: `${booking.stationName} · ${booking.chargerName} reserved.`,
+          dedupeKey: `booking-created:${booking.id}`,
+        },
+        { dedupeWindowMs: 12000 },
+      )
     } catch (err) {
       const msg =
         err?.code === 'BOOKING_CONFLICT'

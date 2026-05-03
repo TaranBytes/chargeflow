@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Zap,
   BatteryCharging,
@@ -14,12 +14,22 @@ import { useNavigate } from 'react-router-dom'
 import EmptyState from '../components/common/EmptyState.jsx'
 import Button from '../components/common/Button.jsx'
 import { useToast } from '../hooks/useToast.js'
+import { bookingApi } from '../api/booking.api.js'
+import { useSocket } from '../hooks/useSocket.js'
+import { notificationService } from '../services/notification.service.js'
 
 const TARGET_KWH = 28
+const ACTIVE_OR_UPCOMING = ['CONFIRMED', 'PENDING', 'IN_PROGRESS']
+const FALLBACK_SESSION = {
+  stationName: 'Connaught Place SuperCharger',
+  chargerCode: 'CP-001',
+  chargerDetails: 'DC Fast · CCS · 150 kW',
+}
 
 export default function ActiveSessionPage() {
   const navigate = useNavigate()
   const toast = useToast()
+  const { subscribe } = useSocket() || {}
 
   // For the demo we start with an active mock session.
   // Setting `active=false` simulates "no session right now" — empty state.
@@ -27,6 +37,7 @@ export default function ActiveSessionPage() {
   const [elapsed, setElapsed] = useState(0)
   const [energy, setEnergy] = useState(0)
   const [running, setRunning] = useState(true)
+  const [sessionBooking, setSessionBooking] = useState(FALLBACK_SESSION)
 
   useEffect(() => {
     if (!active || !running) return
@@ -37,13 +48,79 @@ export default function ActiveSessionPage() {
     return () => clearInterval(id)
   }, [active, running])
 
+  const loadNextBooking = useCallback(async () => {
+    try {
+      const bookings = await bookingApi.list()
+      const now = Date.now()
+      const nextBooking = (bookings || [])
+        .filter((booking) => {
+          if (!ACTIVE_OR_UPCOMING.includes(booking.status)) return false
+          const endAt = new Date(booking.endTime || booking.startTime || 0).getTime()
+          return Number.isFinite(endAt) && endAt > now
+        })
+        .sort((a, b) => new Date(a.startTime || 0).getTime() - new Date(b.startTime || 0).getTime())[0]
+
+      if (!nextBooking) {
+        setSessionBooking(FALLBACK_SESSION)
+        return
+      }
+
+      const stationName = nextBooking.stationName || FALLBACK_SESSION.stationName
+      const chargerName = nextBooking.chargerName || ''
+      const parts = chargerName
+        .split('·')
+        .map((part) => part.trim())
+        .filter(Boolean)
+      const chargerCode = parts[0] || FALLBACK_SESSION.chargerCode
+      const chargerDetails = parts.length > 1 ? parts.slice(1).join(' · ') : FALLBACK_SESSION.chargerDetails
+
+      setSessionBooking({ stationName, chargerCode, chargerDetails })
+    } catch {
+      // Keep demo fallback if bookings API is unavailable.
+      setSessionBooking(FALLBACK_SESSION)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadNextBooking()
+  }, [loadNextBooking])
+
+  useEffect(() => {
+    if (!subscribe) return
+    const offCreated = subscribe('bookingCreated', () => {
+      loadNextBooking()
+    })
+    const offUpdated = subscribe('bookingUpdate', () => {
+      loadNextBooking()
+    })
+    const offStarted = subscribe('chargingStarted', () => {
+      loadNextBooking()
+    })
+    const offStopped = subscribe('chargingStopped', () => {
+      loadNextBooking()
+    })
+    return () => {
+      offCreated?.()
+      offUpdated?.()
+      offStarted?.()
+      offStopped?.()
+    }
+  }, [subscribe, loadNextBooking])
+
   const handleStop = () => {
+    const amount = Number((energy * 18).toFixed(0))
     setActive(false)
     setRunning(false)
     toast.info(
       'Session stopped',
-      `Delivered ${energy.toFixed(1)} kWh · ₹${(energy * 18).toFixed(0)}`,
+      `Delivered ${energy.toFixed(1)} kWh · ₹${amount}`,
     )
+    notificationService.add({
+      type: 'session',
+      title: 'Session ended',
+      body: `${sessionBooking.stationName} · ${sessionBooking.chargerCode} delivered ${energy.toFixed(1)} kWh · ₹${amount}.`,
+      dedupeKey: `session-stop:demo:${sessionBooking.chargerCode}:${Math.floor(elapsed / 5)}`,
+    })
   }
 
   const handleStart = () => {
@@ -92,9 +169,9 @@ export default function ActiveSessionPage() {
           {running ? 'Live session' : 'Paused'}
         </p>
         <h1 className="text-2xl font-bold text-slate-900 mt-1">
-          Connaught Place SuperCharger · CP-001
+          {sessionBooking.stationName} · {sessionBooking.chargerCode}
         </h1>
-        <p className="text-sm text-slate-500 mt-0.5">DC Fast · CCS · 150 kW</p>
+        <p className="text-sm text-slate-500 mt-0.5">{sessionBooking.chargerDetails}</p>
       </div>
 
       {/* Hero progress */}

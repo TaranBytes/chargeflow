@@ -53,13 +53,22 @@ export default function StationDetailPage() {
               </div>
             </div>
 
-            <div className="p-5 grid sm:grid-cols-3 gap-4 border-t border-slate-100">
+            <div className="p-5 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 border-t border-slate-100">
               <Stat
                 icon={CheckCircle2}
                 label="Available"
                 value={`${station.chargers.filter((c) => c.status === 'AVAILABLE').length} / ${station.chargers.length}`}
               />
               <Stat icon={Star} label="Rating" value={station.rating ?? '—'} />
+              <Stat
+                icon={Clock}
+                label="Avg charge time"
+                value={
+                  station.averageChargeTimeMinutes
+                    ? `${station.averageChargeTimeMinutes} min`
+                    : '—'
+                }
+              />
               <Stat icon={Clock} label="Hours" value={station.operatingHours ?? '—'} />
             </div>
 

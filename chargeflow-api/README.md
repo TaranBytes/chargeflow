@@ -66,6 +66,9 @@ Socket.io: ws://localhost:5000
 
 ### 6. Test the API
 ```bash
+# Full automated endpoint smoke test (recommended)
+npm run api:smoke
+
 # Sign up
 curl -X POST http://localhost:5000/api/auth/signup \
   -H 'Content-Type: application/json' \

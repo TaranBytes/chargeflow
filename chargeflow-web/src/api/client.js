@@ -10,7 +10,7 @@ import { storage } from '../services/storage.service.js'
  *  - Response: unwraps `data`, normalizes errors into ApiError, handles 401 globally
  */
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
   timeout: 15000,
   headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 })
