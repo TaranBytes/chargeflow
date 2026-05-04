@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ['user', 'operator', 'admin'], default: 'user' },
+    isBlocked: { type: Boolean, default: false },
     phone: String,
     avatar: String,
     resetPasswordTokenHash: { type: String, default: null, select: false },

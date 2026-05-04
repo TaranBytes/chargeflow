@@ -101,6 +101,7 @@ export default function LoginPage({ initialAuthOpen = false, initialAuthMode = '
 
   const openLogin = () => { setAuthMode('login'); setAuthOpen(true); setLoginSubmitError(null); setSignupSubmitError(null) }
   const openSignup = () => { setAuthMode('signup'); setAuthOpen(true); setLoginSubmitError(null); setSignupSubmitError(null) }
+  const openAdmin = () => navigate('/admin/login')
   const setLoginField = (n, v) => { setLoginForm((f) => ({ ...f, [n]: v })); if (loginTouched[n]) setLoginErrors(validateLogin({ ...loginForm, [n]: v })) }
   const setSignupField = (n, v) => { setSignupForm((f) => ({ ...f, [n]: v })); if (signupTouched[n]) setSignupErrors(validateSignup({ ...signupForm, [n]: v })) }
 
@@ -138,8 +139,12 @@ export default function LoginPage({ initialAuthOpen = false, initialAuthMode = '
         <div className="pointer-events-none fixed inset-0 bg-gradient-to-b from-[#1B0C0C] via-[#252016] to-[#313E17]" aria-hidden />
         <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_35%,rgba(76,92,45,0.22)_0%,transparent_55%)]" aria-hidden />
 
-        <LandingNavbar onOpenLogin={openLogin} onOpenSignup={openSignup} />
-        <HeroSection onOpenLogin={openLogin} onScrollToNetwork={() => scrollToId('network')} />
+        <LandingNavbar onOpenLogin={openLogin} onOpenSignup={openSignup} onOpenAdmin={openAdmin} />
+        <HeroSection
+          onOpenLogin={openLogin}
+          onOpenAdmin={openAdmin}
+          onScrollToNetwork={() => scrollToId('network')}
+        />
 
         {/* Stats strip */}
         <div className="relative z-10 border-t border-white/[0.06] bg-[#1B0C0C]/80 px-4 pb-10 pt-4 backdrop-blur-sm sm:px-6">

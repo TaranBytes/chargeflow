@@ -28,6 +28,7 @@ export async function login({ email, password }) {
 
   const ok = await user.comparePassword(password)
   if (!ok) throw ApiError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS')
+  if (user.isBlocked) throw ApiError.forbidden('Your account is blocked', 'ACCOUNT_BLOCKED')
 
   const token = signAccessToken({ userId: user.id, role: user.role })
   return { user: user.toJSON(), token }

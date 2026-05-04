@@ -1,17 +1,42 @@
-import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, CalendarCheck, Activity, Bell, User, Zap, X, Sparkles } from 'lucide-react'
+import { NavLink, useLocation } from 'react-router-dom'
+import {
+  LayoutDashboard,
+  CalendarCheck,
+  Activity,
+  Bell,
+  User,
+  Zap,
+  X,
+  Sparkles,
+  MapPinned,
+  BatteryCharging,
+  Users,
+  Banknote,
+} from 'lucide-react'
 
-const items = [
+const appItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/bookings', label: 'My Bookings', icon: CalendarCheck },
   { to: '/session', label: 'Charging Sessions', icon: Activity },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/profile', label: 'Profile', icon: User },
 ]
+const adminItems = [
+  { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { to: '/admin/stations', label: 'Stations', icon: MapPinned },
+  { to: '/admin/chargers', label: 'Chargers', icon: BatteryCharging },
+  { to: '/admin/sessions', label: 'Sessions', icon: Activity },
+  { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/revenue', label: 'Revenue', icon: Banknote },
+  { to: '/admin/alerts', label: 'Alerts', icon: Bell },
+]
 
 const SIDEBAR_BORDER = 'border-r border-[rgba(255,255,255,0.05)]'
 
 function SidebarContent({ onNavigate }) {
+  const { pathname } = useLocation()
+  const isAdminRoute = pathname.startsWith('/admin')
+  const items = isAdminRoute ? adminItems : appItems
   return (
     <>
       <div
@@ -21,9 +46,11 @@ function SidebarContent({ onNavigate }) {
           <Zap className="h-5 w-5 text-[#FFDE42]" strokeWidth={2.5} />
         </div>
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-bold leading-tight text-white">ChargeFlow</p>
+          <p className="truncate text-[15px] font-bold leading-tight text-white">
+            {isAdminRoute ? 'ChargeFlow Admin' : 'ChargeFlow'}
+          </p>
           <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.45)]">
-            EV Network
+            {isAdminRoute ? 'Control Center' : 'EV Network'}
           </p>
         </div>
       </div>
@@ -60,7 +87,9 @@ function SidebarContent({ onNavigate }) {
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-[#1B0C0C]">Pro</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[#1B0C0C]">
+              {isAdminRoute ? 'Admin' : 'Pro'}
+            </p>
             <p className="mt-0.5 text-xs font-semibold leading-snug text-[#1B0C0C]/90">20% off fast charging</p>
           </div>
         </div>
@@ -68,7 +97,7 @@ function SidebarContent({ onNavigate }) {
           type="button"
           className="mt-3 w-full rounded-lg bg-[#221414] py-2 text-[11px] font-semibold text-[#FFDE42] transition hover:bg-black"
         >
-          Upgrade
+          {isAdminRoute ? 'System Status' : 'Upgrade'}
         </button>
       </div>
     </>

@@ -13,7 +13,7 @@ function scrollToId(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-export default function LandingNavbar({ onOpenLogin, onOpenSignup }) {
+export default function LandingNavbar({ onOpenLogin, onOpenSignup, onOpenAdmin }) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -51,6 +51,13 @@ export default function LandingNavbar({ onOpenLogin, onOpenSignup }) {
 
         {/* Right — Auth buttons */}
         <div className="flex shrink-0 items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenAdmin}
+            className="rounded-lg border border-[#FFDE42]/25 bg-[#FFDE42]/10 px-3 py-1.5 text-xs font-semibold text-[#FFDE42] transition-all duration-200 hover:border-[#FFDE42]/50 hover:bg-[#FFDE42]/15"
+          >
+            Admin
+          </button>
           <button
             type="button"
             onClick={onOpenLogin}

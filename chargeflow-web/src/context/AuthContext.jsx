@@ -21,6 +21,17 @@ export function AuthProvider({ children }) {
   })
   const [loading, setLoading] = useState(false)
 
+  const updateUser = useCallback((updater) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      const nextProfile =
+        typeof updater === 'function' ? updater(prev) : { ...prev, ...(updater || {}) }
+      const next = nextProfile ? { ...nextProfile, token: prev.token } : prev
+      storage.set('cf_user', next)
+      return next
+    })
+  }, [])
+
   const logout = useCallback(() => {
     storage.remove('cf_user')
     setUser(null)
@@ -54,6 +65,44 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  const adminLogin = useCallback(async (email, password) => {
+    setLoading(true)
+    try {
+      const data = await request('post', '/admin/login', { data: { email, password } })
+      const session = normalizeSession(data)
+      storage.set('cf_user', session)
+      setUser(session)
+      return session
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const addVehicle = useCallback(async (vehicle) => {
+    const data = await request('post', '/auth/me/vehicles', { data: vehicle })
+    const next = normalizeSession({
+      ...user,
+      user: data?.user || user,
+    })
+    if (next) {
+      storage.set('cf_user', next)
+      setUser(next)
+    }
+    return data?.vehicle
+  }, [user])
+
+  const removeVehicle = useCallback(async (index) => {
+    const data = await request('delete', `/auth/me/vehicles/${index}`)
+    const next = normalizeSession({
+      ...user,
+      user: data?.user || user,
+    })
+    if (next) {
+      storage.set('cf_user', next)
+      setUser(next)
+    }
+  }, [user])
+
   useEffect(() => {
     let cancelled = false
     const hydrate = async () => {
@@ -82,7 +131,19 @@ export function AuthProvider({ children }) {
   }, [logout])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        adminLogin,
+        signup,
+        logout,
+        updateUser,
+        addVehicle,
+        removeVehicle,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )

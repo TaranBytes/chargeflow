@@ -27,6 +27,7 @@ export const protect = asyncHandler(async (req, _res, next) => {
 
   const user = await User.findById(decoded.userId)
   if (!user) throw ApiError.unauthorized('User no longer exists', 'USER_GONE')
+  if (user.isBlocked) throw ApiError.forbidden('Your account is blocked', 'ACCOUNT_BLOCKED')
 
   req.user = user
   req.token = token

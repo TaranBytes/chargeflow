@@ -28,6 +28,7 @@ const stationSchema = new mongoose.Schema(
     images: { type: [String], default: [] },
     averageChargeTimeMinutes: { type: Number, default: 45, min: 1 },
     totalChargers: { type: Number, default: 0 },
+    pricingPerKWh: { type: Number, default: 12, min: 0 },
     status: {
       type: String,
       enum: ['ACTIVE', 'MAINTENANCE', 'INACTIVE'],

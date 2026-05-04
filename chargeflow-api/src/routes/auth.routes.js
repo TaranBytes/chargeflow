@@ -27,10 +27,28 @@ const resetSchema = Joi.object({
   newPassword: Joi.string().min(6).max(128).required(),
 })
 
+const addVehicleSchema = Joi.object({
+  make: Joi.string().trim().min(1).max(80).required(),
+  model: Joi.string().trim().min(1).max(80).required(),
+  batteryKWh: Joi.number().positive().required(),
+  connectorType: Joi.string().valid('Type2', 'CCS', 'CHAdeMO', 'Tesla').required(),
+})
+
+const removeVehicleParamsSchema = Joi.object({
+  index: Joi.number().integer().min(0).required(),
+})
+
 router.post('/signup', validate(signupSchema), authController.signup)
 router.post('/login', validate(loginSchema), authController.login)
 router.post('/forgot-password', validate(forgotSchema), authController.forgotPassword)
 router.post('/reset-password', validate(resetSchema), authController.resetPassword)
 router.get('/me', protect, authController.me)
+router.post('/me/vehicles', protect, validate(addVehicleSchema), authController.addVehicle)
+router.delete(
+  '/me/vehicles/:index',
+  protect,
+  validate(removeVehicleParamsSchema, 'params'),
+  authController.removeVehicle,
+)
 
 export default router

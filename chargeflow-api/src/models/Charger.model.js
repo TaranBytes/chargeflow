@@ -10,7 +10,7 @@ const chargerSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    type: { type: String, enum: ['AC', 'DC'], required: true },
+    type: { type: String, enum: ['AC', 'DC', 'Fast'], required: true },
     connectorType: {
       type: String,
       enum: ['Type2', 'CCS', 'CHAdeMO', 'Tesla'],
@@ -18,6 +18,7 @@ const chargerSchema = new mongoose.Schema(
     },
     powerKW: { type: Number, required: true, min: 1 },
     pricePerKWh: { type: Number, required: true, min: 0, default: 12 },
+    isEnabled: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ['AVAILABLE', 'RESERVED', 'OCCUPIED', 'OFFLINE', 'FAULTED'],

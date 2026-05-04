@@ -1,10 +1,12 @@
 import { Search, Bell, Menu, Zap } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 
 export default function Navbar({ onMenuClick }) {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const isAdminRoute = pathname.startsWith('/admin')
 
   const inputClass = `
     w-full rounded-xl border border-black/8 bg-[rgba(255,255,255,0.92)] py-2.5 pl-10 pr-4
@@ -35,7 +37,7 @@ export default function Navbar({ onMenuClick }) {
             <Zap className="h-4 w-4 text-[#FFDE42]" strokeWidth={2.5} />
           </div>
           <span className="hidden max-w-[7rem] truncate font-bold tracking-tight text-white sm:inline">
-            ChargeFlow
+            {isAdminRoute ? 'Admin Panel' : 'ChargeFlow'}
           </span>
         </div>
       </div>
@@ -45,7 +47,7 @@ export default function Navbar({ onMenuClick }) {
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#666666]" />
           <input
             type="text"
-            placeholder="Search stations, cities, chargers…"
+            placeholder={isAdminRoute ? 'Search users, stations, alerts…' : 'Search stations, cities, chargers…'}
             className={inputClass}
           />
         </div>
@@ -53,7 +55,7 @@ export default function Navbar({ onMenuClick }) {
 
       <div className="relative min-w-0 flex-1 md:hidden">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#666666]" />
-        <input type="text" placeholder="Search…" className={`${inputClass} py-2 pl-9 pr-3`} />
+        <input type="text" placeholder={isAdminRoute ? 'Search admin…' : 'Search…'} className={`${inputClass} py-2 pl-9 pr-3`} />
       </div>
 
       <div className="hidden flex-1 md:block lg:max-w-[200px]" aria-hidden />
@@ -61,7 +63,7 @@ export default function Navbar({ onMenuClick }) {
       <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-4">
         <button
           type="button"
-          onClick={() => navigate('/notifications')}
+          onClick={() => navigate(isAdminRoute ? '/admin/alerts' : '/notifications')}
           className="relative grid h-10 w-10 place-items-center rounded-xl text-[#FFDE42] transition hover:bg-white/5"
           aria-label="Notifications"
         >
