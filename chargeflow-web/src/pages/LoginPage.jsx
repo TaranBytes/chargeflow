@@ -142,7 +142,6 @@ export default function LoginPage({ initialAuthOpen = false, initialAuthMode = '
         <LandingNavbar onOpenLogin={openLogin} onOpenSignup={openSignup} onOpenAdmin={openAdmin} />
         <HeroSection
           onOpenLogin={openLogin}
-          onOpenAdmin={openAdmin}
           onScrollToNetwork={() => scrollToId('network')}
         />
 

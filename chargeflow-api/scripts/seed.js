@@ -304,6 +304,115 @@ async function upsertSampleBooking(users) {
   logger.info('[seed] sample booking created')
 }
 
+async function upsertSampleSessions(users) {
+  const sahib = users.find((u) => u.email === 'sahib@chargeflow.dev')
+  const demoUser = users.find((u) => u.email === 'demo@chargeflow.dev')
+  if (!sahib || !demoUser) return
+
+  const chargerDocs = await Charger.find({
+    ocppId: { $in: ['CP-001', 'CP-002', 'CP-005', 'CP-010', 'CP-015', 'CP-024'] },
+  }).populate('station')
+  const chargerByOcpp = new Map(chargerDocs.map((c) => [c.ocppId, c]))
+
+  const now = Date.now()
+  const demoSessions = [
+    {
+      marker: 'seed-demo-session-1',
+      user: sahib._id,
+      ocppId: 'CP-001',
+      startOffsetMins: -150,
+      durationMins: 44,
+      energyConsumed: 28.6,
+      cost: 514.8,
+      status: 'COMPLETED',
+      stopReason: 'seed-demo-session-1',
+    },
+    {
+      marker: 'seed-demo-session-2',
+      user: demoUser._id,
+      ocppId: 'CP-005',
+      startOffsetMins: -320,
+      durationMins: 36,
+      energyConsumed: 21.2,
+      cost: 339.2,
+      status: 'COMPLETED',
+      stopReason: 'seed-demo-session-2',
+    },
+    {
+      marker: 'seed-demo-session-3',
+      user: sahib._id,
+      ocppId: 'CP-010',
+      startOffsetMins: -580,
+      durationMins: 58,
+      energyConsumed: 34.9,
+      cost: 593.3,
+      status: 'COMPLETED',
+      stopReason: 'seed-demo-session-3',
+    },
+    {
+      marker: 'seed-demo-session-4',
+      user: demoUser._id,
+      ocppId: 'CP-015',
+      startOffsetMins: -990,
+      durationMins: 42,
+      energyConsumed: 26.3,
+      cost: 526.0,
+      status: 'COMPLETED',
+      stopReason: 'seed-demo-session-4',
+    },
+    {
+      marker: 'seed-demo-session-5',
+      user: sahib._id,
+      ocppId: 'CP-024',
+      startOffsetMins: -70,
+      durationMins: 19,
+      energyConsumed: 11.4,
+      cost: 216.6,
+      status: 'INTERRUPTED',
+      stopReason: 'seed-demo-session-5',
+    },
+    {
+      marker: 'seed-demo-session-6',
+      user: demoUser._id,
+      ocppId: 'CP-002',
+      startOffsetMins: -8,
+      durationMins: null,
+      energyConsumed: 4.1,
+      cost: 65.6,
+      status: 'ACTIVE',
+      stopReason: 'seed-demo-session-6',
+    },
+  ]
+
+  await ChargingSession.deleteMany({ stopReason: { $regex: '^seed-demo-session-' } })
+
+  const docs = demoSessions
+    .map((item) => {
+      const charger = chargerByOcpp.get(item.ocppId)
+      if (!charger?.station?._id) return null
+      const startTime = new Date(now + item.startOffsetMins * 60 * 1000)
+      const endTime = item.durationMins ? new Date(startTime.getTime() + item.durationMins * 60 * 1000) : undefined
+      return {
+        user: item.user,
+        charger: charger._id,
+        station: charger.station._id,
+        startTime,
+        endTime,
+        energyConsumed: item.energyConsumed,
+        cost: item.cost,
+        status: item.status,
+        stopReason: item.stopReason,
+      }
+    })
+    .filter(Boolean)
+
+  if (docs.length) {
+    await ChargingSession.insertMany(docs)
+  }
+
+  logger.info(`[seed] demo sessions upserted (${docs.length})`)
+}
+
 async function run() {
   logger.info(`[seed] connecting to ${env.mongoUri.replace(/:\/\/[^@]+@/, '://***@')}`)
   await connectDB()
@@ -311,6 +420,7 @@ async function run() {
   const users = await upsertUsers()
   await upsertStationsAndChargers()
   await upsertSampleBooking(users)
+  await upsertSampleSessions(users)
   await mongoose.connection.syncIndexes()
   logger.info('[seed] done ✅')
   await disconnectDB()

@@ -1,4 +1,4 @@
-import { Search, Bell, Menu, Zap } from 'lucide-react'
+import { Bell, Menu, Zap } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 
@@ -8,13 +8,6 @@ export default function Navbar({ onMenuClick }) {
   const { pathname } = useLocation()
   const isAdminRoute = pathname.startsWith('/admin')
 
-  const inputClass = `
-    w-full rounded-xl border border-black/8 bg-[rgba(255,255,255,0.92)] py-2.5 pl-10 pr-4
-    text-sm text-[#1B0C0C] placeholder:text-[#666666]
-    outline-none transition duration-200
-    focus:border-[#4C5C2D] focus:ring-2 focus:ring-[#FFDE42]/20
-  `
-
   return (
     <header
       className="
@@ -23,7 +16,7 @@ export default function Navbar({ onMenuClick }) {
         sm:min-h-[3.5rem] sm:px-4 lg:px-6
       "
     >
-      <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3 lg:w-[200px]">
+      <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={onMenuClick}
@@ -32,33 +25,16 @@ export default function Navbar({ onMenuClick }) {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5">
-            <Zap className="h-4 w-4 text-[#FFDE42]" strokeWidth={2.5} />
-          </div>
-          <span className="hidden max-w-[7rem] truncate font-bold tracking-tight text-white sm:inline">
-            {isAdminRoute ? 'Admin Panel' : 'ChargeFlow'}
-          </span>
+      </div>
+
+      <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5">
+          <Zap className="h-4 w-4 text-[#FFDE42]" strokeWidth={2.5} />
         </div>
+        <span className="max-w-[10rem] truncate font-bold tracking-tight text-white sm:max-w-[12rem]">
+          {isAdminRoute ? 'Admin Panel' : 'ChargeFlow'}
+        </span>
       </div>
-
-      <div className="absolute left-1/2 top-1/2 hidden w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 md:block">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#666666]" />
-          <input
-            type="text"
-            placeholder={isAdminRoute ? 'Search users, stations, alerts…' : 'Search stations, cities, chargers…'}
-            className={inputClass}
-          />
-        </div>
-      </div>
-
-      <div className="relative min-w-0 flex-1 md:hidden">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#666666]" />
-        <input type="text" placeholder={isAdminRoute ? 'Search admin…' : 'Search…'} className={`${inputClass} py-2 pl-9 pr-3`} />
-      </div>
-
-      <div className="hidden flex-1 md:block lg:max-w-[200px]" aria-hidden />
 
       <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-4">
         <button

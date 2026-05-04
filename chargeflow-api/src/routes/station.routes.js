@@ -9,7 +9,7 @@ const listQuerySchema = Joi.object({
   search: Joi.string().allow('', null),
   city: Joi.string().allow('', null),
   page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(50),
+  limit: Joi.number().integer().min(1).max(2000).default(500),
 })
 
 router.get('/', validate(listQuerySchema, 'query'), stationController.listStations)

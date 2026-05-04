@@ -7,7 +7,6 @@ import {
   User,
   Zap,
   X,
-  Sparkles,
   MapPinned,
   BatteryCharging,
   Users,
@@ -80,26 +79,6 @@ function SidebarContent({ onNavigate }) {
           </NavLink>
         ))}
       </nav>
-
-      <div className="mx-3 mb-4 mt-auto shrink-0 rounded-xl bg-gradient-to-br from-[#FFDE42] to-[#C8A900] p-3.5 shadow-lg shadow-black/30">
-        <div className="flex items-start gap-2">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-black/15 text-[#1B0C0C]">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-[#1B0C0C]">
-              {isAdminRoute ? 'Admin' : 'Pro'}
-            </p>
-            <p className="mt-0.5 text-xs font-semibold leading-snug text-[#1B0C0C]/90">20% off fast charging</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="mt-3 w-full rounded-lg bg-[#221414] py-2 text-[11px] font-semibold text-[#FFDE42] transition hover:bg-black"
-        >
-          {isAdminRoute ? 'System Status' : 'Upgrade'}
-        </button>
-      </div>
     </>
   )
 }

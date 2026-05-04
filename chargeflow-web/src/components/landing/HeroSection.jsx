@@ -24,7 +24,7 @@ const fadeUp = {
   },
 }
 
-export default function HeroSection({ onOpenLogin, onOpenAdmin, onScrollToNetwork }) {
+export default function HeroSection({ onOpenLogin, onScrollToNetwork }) {
   const reduceMotion = useReducedMotion()
 
   return (
@@ -75,13 +75,6 @@ export default function HeroSection({ onOpenLogin, onOpenAdmin, onScrollToNetwor
             className="text-sm font-medium text-white/55 underline-offset-4 transition-colors hover:text-white hover:underline"
           >
             Member access
-          </button>
-          <button
-            type="button"
-            onClick={onOpenAdmin}
-            className="rounded-xl border border-[#FFDE42]/25 bg-[#FFDE42]/10 px-4 py-2 text-sm font-semibold text-[#FFDE42] transition hover:border-[#FFDE42]/50 hover:bg-[#FFDE42]/15"
-          >
-            Admin panel
           </button>
         </m.div>
       </m.div>

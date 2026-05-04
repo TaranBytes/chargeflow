@@ -4,7 +4,7 @@ import { Station } from '../models/Station.model.js'
 import { Charger } from '../models/Charger.model.js'
 
 export const listStations = asyncHandler(async (req, res) => {
-  const { search, city, page = 1, limit = 50 } = req.query
+  const { search, city, page = 1, limit = 500 } = req.query
   const filter = { status: 'ACTIVE' }
   if (search) filter.$or = [
     { name: new RegExp(String(search), 'i') },
