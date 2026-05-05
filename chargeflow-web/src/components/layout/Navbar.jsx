@@ -27,13 +27,34 @@ export default function Navbar({ onMenuClick }) {
         </button>
       </div>
 
-      <div className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+      <div
+        className="
+          pointer-events-none flex min-w-0 flex-1 items-center justify-start gap-2
+          pl-0 sm:pl-1
+        "
+      >
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5">
           <Zap className="h-4 w-4 text-[#FFDE42]" strokeWidth={2.5} />
         </div>
-        <span className="max-w-[10rem] truncate font-bold tracking-tight text-white sm:max-w-[12rem]">
-          {isAdminRoute ? 'Admin Panel' : 'ChargeFlow'}
-        </span>
+        {isAdminRoute ? (
+          <span className="min-w-0 max-w-[10rem] truncate font-bold tracking-tight text-white sm:max-w-[12rem]">
+            Admin Panel
+          </span>
+        ) : (
+          <span
+            className="
+              pointer-events-auto inline-block min-w-0 max-w-[min(55vw,18rem)] text-left text-[11px] font-semibold leading-snug
+              tracking-[0.06em] antialiased transition-[filter,opacity] duration-300 ease-out
+              bg-gradient-to-r from-ev-gold via-ev-sand to-ev-fern bg-clip-text text-transparent
+              motion-safe:animate-login-rise
+              hover:brightness-110 hover:drop-shadow-[0_0_14px_rgba(255,222,66,0.38)]
+              sm:max-w-[min(50vw,22rem)] sm:text-sm sm:leading-snug sm:tracking-[0.07em]
+              md:max-w-md md:text-base
+            "
+          >
+            Smart Charging. Smarter Journeys.
+          </span>
+        )}
       </div>
 
       <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3 lg:gap-4">
